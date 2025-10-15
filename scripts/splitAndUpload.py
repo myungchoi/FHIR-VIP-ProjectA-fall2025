@@ -10,7 +10,8 @@ SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-09-30.csv")
 OUT_DIR = Path("../results/split_upload_chunks")
 
 # Rows Per Chunk
-CHUNK_SIZE = 1000
+# I recommend something from 100-500 depending on your machine, 1000 can work but crashes sometimes
+CHUNK_SIZE = 500
 MAX_RETRIES = 3
 RETRY_BACKOFF = 2.0
 
