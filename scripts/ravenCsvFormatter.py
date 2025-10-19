@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import date
 import os
 
@@ -13,7 +14,6 @@ output_file = f'MILWAUKEE_TO_RAVEN_{file_runtime}.csv'
 output_file_one_row = f'MILWAUKEE_TO_RAVEN_{file_runtime}_ONE_ROW.csv'
 output_path = '../results/'
 
-# Duplicate Dict Keys? CDEATHTIME and CDEATHDATE. Removed dups for now JST 9-29-25
 RAVEN_MAP = {
     "BASEFHIRID": "CaseIdentifier",
     "SYSTEMID": None,
@@ -177,17 +177,37 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
     raven_df = pd.read_csv(raven_file)
 
     # Map columns
+    new_data = {}
     for target_col in raven_df.columns:
         source_col = mapping.get(target_col)
         if source_col and source_col in source_df.columns:
-            raven_df[target_col] = source_df[source_col]
+            new_data[target_col] = source_df[source_col]
         else:
-            raven_df[target_col] = None
+            new_data[target_col] = None
+
+    raven_df = pd.DataFrame(new_data)
 
     # Adjust Death Datetime
     raven_df['CDEATHDATE'] = pd.to_datetime(raven_df['CDEATHDATE'])
     raven_df['CDEATHTIME'] = raven_df['CDEATHDATE'].dt.strftime("%H:%M:%S")
     raven_df['CDEATHDATE'] = raven_df['CDEATHDATE'].dt.strftime("%Y-%m-%d")
+
+    # Adjust Age Data Type
+    raven_df['AGEUNIT'] = 'Years'
+    raven_df['AGE_STR'] = raven_df['AGE']
+    cond1 = raven_df['AGE_STR'].str.contains('Year', na=False)
+    cond2 = raven_df['AGE_STR'].str.contains('Month', na=False)
+    cond3 = raven_df['AGE_STR'].str.contains('Day', na=False)
+
+    raven_df['AGE'] = np.select(
+        [cond1, cond2, cond3],
+        [
+            (raven_df['AGE_STR'].str.split().str[0].astype(float)),
+            (raven_df['AGE_STR'].str.split().str[0].astype(float) / 12).round(2),
+            (raven_df['AGE_STR'].str.split().str[0].astype(float) / 365).round(2),
+        ],
+        default=raven_df['AGE_STR']
+    )
 
     # Export as csv
     raven_df.to_csv(output_loc, index=False)
@@ -199,7 +219,13 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
 # ********* Main Driver *****************
 try:
     os.makedirs(output_path, exist_ok=True)
+
+    # Export full CSV
     format_csv_to_raven(original_file_loc, raven_template_loc, RAVEN_MAP, f'{output_path}{output_file}')
+
+    #Export one row
+    # format_csv_to_raven(original_file_loc, raven_template_loc, RAVEN_MAP, f'{output_path}{output_file_one_row}')
+
     print(f'File Created: {output_file}')
 except Exception as e:
     print(f'File Creation Error: {e}')
