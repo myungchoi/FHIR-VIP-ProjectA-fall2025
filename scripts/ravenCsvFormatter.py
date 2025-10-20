@@ -187,10 +187,12 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
 
     raven_df = pd.DataFrame(new_data)
 
-    # Adjust Death Datetime
-    raven_df['CDEATHDATE'] = pd.to_datetime(raven_df['CDEATHDATE'])
+    raven_df['CDEATHDATE'] = pd.to_datetime(raven_df['CDEATHDATE'], errors='coerce')
     raven_df['CDEATHTIME'] = raven_df['CDEATHDATE'].dt.strftime("%H:%M:%S")
-    raven_df['CDEATHDATE'] = raven_df['CDEATHDATE'].dt.strftime("%Y-%m-%d")
+
+    # Convert date columns to m/d/YYYY (importer expects this format)
+    for col in ['CDEATHDATE', 'EVENTDATE']:
+        raven_df[col] = pd.to_datetime(raven_df[col], errors='coerce').dt.strftime('%-m/%-d/%Y')
 
     # Adjust Age Data Type
     raven_df['AGEUNIT'] = 'Years'

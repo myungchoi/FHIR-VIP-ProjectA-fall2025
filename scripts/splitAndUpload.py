@@ -6,12 +6,12 @@ URL = "http://localhost/raven-import-and-submit-api/upload-csv-file"
 AUTH = ("client","secret")
 TYPE_FIELD = {"type":"mdi"}
 
-SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-09-30.csv")
+SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-10-19.csv")
 OUT_DIR = Path("../results/split_upload_chunks")
 
 # Rows Per Chunk
 # I recommend something from 100-500 depending on your machine, 1000 can work but crashes sometimes
-CHUNK_SIZE = 500
+CHUNK_SIZE = 400
 MAX_RETRIES = 3
 RETRY_BACKOFF = 2.0
 
