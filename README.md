@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Generate Raven MDI CSV (`scripts/ravenCsvFormatter.py`)
+## Generate Raven MDI CSV (`scripts/ravenCsvFormatter.py`)
 
 Purpose
 - Map your county CSV into the Raven MDI Import Template and emit a cleaned, schema-conformant CSV.
@@ -84,7 +84,7 @@ Output
 Current sample mapping
 - The provided `RAVEN_MAP` is configured for the included Milwaukee County sample file and maps fields such as `Age`, `Sex`, `DeathDate`, `EventDate`, `DeathCity/State/Zip/Addr`, and cause/manner fields into Raven columns.
 
-### Split and Upload CSV (`scripts/splitAndUpload.py`)
+## Split and Upload CSV (`scripts/splitAndUpload.py`)
 
 Purpose
 - Split a large Raven MDI CSV into manageable chunk files and upload each chunk to the Raven Import and Submit API, which forwards the records into the Raven FHIR Server. Includes retry with exponential backoff.
@@ -114,7 +114,7 @@ Behavior
 - Stops on first failed upload, reports progress, and cleans up temporary chunk files.
  - You should see entries in your fhir server: if local, open `http://localhost:8080/mdi-fhir-server/` and browse Patients/Composition/Bundle resources; or replace host accordingly (e.g., `http://<host>:8080/mdi-fhir-server/`).
 
-### Extract FHIR Data for Analysis (`scripts/extractFhirData.py`)
+## Extract FHIR Data for Analysis (`scripts/extractFhirData.py`)
 
 Purpose
 - Page through the Raven FHIR Server Bundle endpoint and extract fields for analysis (gender, ZIP, death year, cause, manner) into a CSV (e.g., for Tableau). 
