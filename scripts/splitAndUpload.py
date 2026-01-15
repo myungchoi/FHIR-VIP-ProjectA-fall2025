@@ -2,18 +2,20 @@ import os, csv, time, requests, sys, signal
 from pathlib import Path
 
 
-URL = "http://localhost/raven-import-and-submit-api/upload-csv-file"
+# URL = "http://localhost/raven-import-and-submit-api/upload-csv-file"
+URL = "https://raven.dev.heat.icl.gtri.org/raven-import-api/upload-csv-file"
 AUTH = ("client","secret")
 TYPE_FIELD = {"type":"mdi"}
 
-SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-10-19.csv")
+SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-12-16.csv")
 OUT_DIR = Path("../results/split_upload_chunks")
 
 # Rows Per Chunk
 # I recommend something from 100-500 depending on your machine, 1000 can work but crashes sometimes
 CHUNK_SIZE = 400
 MAX_RETRIES = 3
-RETRY_BACKOFF = 2.0
+RETRY_BACKOFF = 60.0
+LAST_SUCCESS_UPLOAD = 56
 
 OUT_DIR.mkdir(parents=True, exist_ok=True) 
 
@@ -69,7 +71,7 @@ def split_csv(source_csv: Path, out_dir: Path, chunk_size: int) -> list[Path]:
 def upload_file(path: Path) -> tuple[int,str]:
     with path.open("rb") as f:
         files = {"file": (path.name, f, "text/csv")}
-        r = requests.post(URL, auth=AUTH, files=files, data=TYPE_FIELD, timeout=120)
+        r = requests.post(URL, auth=AUTH, files=files, data=TYPE_FIELD, timeout=6000)
         return r.status_code, r.text
 
 # Upload a file with some retry attempts, return true if successful, false if otherwise
@@ -126,7 +128,7 @@ try:
     print("Uploading chunks...")
     successful_uploads = 0
     
-    for i, chunk_path in enumerate(chunk_paths, 1):
+    for i, chunk_path in enumerate(chunk_paths[LAST_SUCCESS_UPLOAD:], start=LAST_SUCCESS_UPLOAD+1):
         print(f"Uploading chunk {i}/{len(chunk_paths)}: {chunk_path.name}")
         
         # Timer per upload

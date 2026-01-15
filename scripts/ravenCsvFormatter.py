@@ -36,9 +36,9 @@ RAVEN_MAP = {
     "POSSIBLEID": None,
     "CAUSEA": "CauseA",
     "CAUSEB": "CauseB",
-    "CAUSEC": "CauseOther",
+    "CAUSEC": None,
     "CAUSED": None,
-    "OSCOND": None,
+    "OSCOND": "CauseOther",
     "MANNER": "Mode",
     "DISPMETHOD": None,
     "CHOWNINJURY": None,
@@ -173,7 +173,7 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
             The function writes the mapped DataFrame to `output_loc` and does not return anything.
         """
     # Convert to pandas dataframes
-    source_df = pd.read_csv(csv_file)
+    source_df = pd.read_csv(csv_file, dtype={'DeathZip': 'Int64', 'death_year': 'Int64'})
     raven_df = pd.read_csv(raven_file)
 
     # Map columns
@@ -195,21 +195,28 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
         raven_df[col] = pd.to_datetime(raven_df[col], errors='coerce').dt.strftime('%-m/%-d/%Y')
 
     # Adjust Age Data Type
-    raven_df['AGEUNIT'] = 'Years'
+    # - corrected. in MDI and VRDR FHIR IGs, they support years, months, and days for unit. We should not convert
+    #   this unit. Year must be integer. And, if 7 months are there for example, then it should be 7 months,
+    #   not 1 year.
+    #raven_df['AGEUNIT'] = 'Years'
     raven_df['AGE_STR'] = raven_df['AGE']
-    cond1 = raven_df['AGE_STR'].str.contains('Year', na=False)
-    cond2 = raven_df['AGE_STR'].str.contains('Month', na=False)
-    cond3 = raven_df['AGE_STR'].str.contains('Day', na=False)
+    #cond1 = raven_df['AGE_STR'].str.contains('Year', na=False)
+    #cond2 = raven_df['AGE_STR'].str.contains('Month', na=False)
+    #cond3 = raven_df['AGE_STR'].str.contains('Day', na=False)
 
-    raven_df['AGE'] = np.select(
-        [cond1, cond2, cond3],
-        [
-            (raven_df['AGE_STR'].str.split().str[0].astype(float)),
-            (raven_df['AGE_STR'].str.split().str[0].astype(float) / 12).round(2),
-            (raven_df['AGE_STR'].str.split().str[0].astype(float) / 365).round(2),
-        ],
-        default=raven_df['AGE_STR']
-    )
+    #raven_df['AGE'] = np.select(
+    #    [cond1, cond2, cond3],
+    #    [
+    #        (raven_df['AGE_STR'].str.split().str[0].astype(float)),
+    #        (raven_df['AGE_STR'].str.split().str[0].astype(float) / 12).round(2),
+    #        (raven_df['AGE_STR'].str.split().str[0].astype(float) / 365).round(2),
+    #    ],
+    #    default=raven_df['AGE_STR']
+    #)
+    raven_df['AGE'] = raven_df['AGE_STR'].str.split().str[0]
+    raven_df['AGEUNIT'] = raven_df['AGE_STR'].str.split().str[1]
+
+    raven_df['RESZIP']  = raven_df['RESZIP'].replace(to_replace = "\\.0+$",value = "", regex = True)
 
     # Export as csv
     raven_df.to_csv(output_loc, index=False)
