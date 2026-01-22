@@ -7,7 +7,7 @@ URL = "https://raven.dev.heat.icl.gtri.org/raven-import-api/upload-csv-file"
 AUTH = ("client","secret")
 TYPE_FIELD = {"type":"mdi"}
 
-SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2025-12-16.csv")
+SOURCE_CSV = Path("../results/MILWAUKEE_TO_RAVEN_2026-01-16.csv")
 OUT_DIR = Path("../results/split_upload_chunks")
 
 # Rows Per Chunk
@@ -15,7 +15,7 @@ OUT_DIR = Path("../results/split_upload_chunks")
 CHUNK_SIZE = 400
 MAX_RETRIES = 3
 RETRY_BACKOFF = 60.0
-LAST_SUCCESS_UPLOAD = 56
+LAST_SUCCESS_UPLOAD = 0
 
 OUT_DIR.mkdir(parents=True, exist_ok=True) 
 

@@ -14,6 +14,10 @@ output_file = f'MILWAUKEE_TO_RAVEN_{file_runtime}.csv'
 output_file_one_row = f'MILWAUKEE_TO_RAVEN_{file_runtime}_ONE_ROW.csv'
 output_path = '../results/'
 
+# system id that identifies the source of data. This makes this dataset unique with another dataset from 
+# different sources.
+system_id = "milwaukee"
+
 RAVEN_MAP = {
     "BASEFHIRID": "CaseIdentifier",
     "SYSTEMID": None,
@@ -218,6 +222,9 @@ def format_csv_to_raven(csv_file, raven_file, mapping, output_loc):
 
     raven_df['RESZIP']  = raven_df['RESZIP'].replace(to_replace = "\\.0+$",value = "", regex = True)
 
+    # set system id
+    raven_df['SYSTEMID'] = system_id
+    
     # Export as csv
     raven_df.to_csv(output_loc, index=False)
 
